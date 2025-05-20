@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+<div class="text-center mt-5">
+  <h1>Bienvenido a la Plataforma de Tutorías</h1>
+  <p class="lead">Conecta estudiantes con tutores en tiempo real.</p>
+  <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">Iniciar sesión</a>
+  <a href="{{ url_for('auth.register') }}" class="btn btn-success btn-lg ms-2">Registrarse</a>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Perfil Tutor{% endblock %}
+{% block content %}
+<h2>Perfil del Tutor</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">{{ form.bio.label }} {{ form.bio(class="form-control") }}</div>
+    <div class="mb-3">{{ form.subjects.label }} {{ form.subjects(class="form-control") }}</div>
+    <div class="mb-3">{{ form.availability.label }} {{ form.availability(class="form-control") }}</div>
+    <button type="submit" class="btn btn-primary">Guardar</button>
+</form>
+{% endblock %}

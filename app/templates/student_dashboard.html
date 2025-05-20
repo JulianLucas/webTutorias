@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Panel Estudiante{% endblock %}
+{% block content %}
+<h2>Panel del Estudiante</h2>
+<form method="POST">
+    {{ form.hidden_tag() }}
+    <div class="mb-3">{{ form.subject.label }} {{ form.subject(class="form-control") }}</div>
+    <button type="submit" class="btn btn-primary">Buscar</button>
+</form>
+<h4 class="mt-4">Tutores Disponibles</h4>
+<ul>
+  {% for tutor in tutors %}
+    <li>
+      <strong>{{ tutor.user.username }}</strong> | Materias: {{ tutor.subjects }} | Disponibilidad: {{ tutor.availability }}
+      <a href="{{ url_for('booking.request_booking', tutor_id=tutor.id) }}" class="btn btn-success btn-sm">Solicitar Tutoría</a>
+      <a href="{{ url_for('review.add_review', tutor_id=tutor.id) }}" class="btn btn-warning btn-sm">Calificar</a>
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}

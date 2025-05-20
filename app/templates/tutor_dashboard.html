@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Panel Tutor{% endblock %}
+{% block content %}
+<h2>Panel del Tutor</h2>
+<a href="{{ url_for('tutor.profile') }}" class="btn btn-info mb-3">Editar Perfil</a>
+<h4>Solicitudes de Tutoría</h4>
+<ul>
+  {% for booking in bookings %}
+    <li>
+      {{ booking.subject }} | {{ booking.datetime }} | Estado: {{ booking.status }}
+      {% if booking.status == 'pendiente' %}
+        <a href="{{ url_for('booking.confirm_booking', booking_id=booking.id) }}" class="btn btn-success btn-sm">Confirmar</a>
+      {% elif booking.status == 'confirmada' %}
+        <a href="{{ url_for('booking.video_call', booking_id=booking.id) }}" class="btn btn-primary btn-sm">Videollamada</a>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>
+{% endblock %}
