@@ -33,7 +33,7 @@ def request_booking(tutor_id):
     return render_template('booking_request.html', form=form, tutor_profile=tutor_profile)
 
 
-@bp.route('/confirm/<int:booking_id>')
+@bp.route('/confirm/<string:booking_id>')
 @login_required
 def confirm_booking(booking_id):
     from app import db_firestore
@@ -52,7 +52,7 @@ def confirm_booking(booking_id):
     return redirect(url_for('tutor.dashboard'))
 
 
-@bp.route('/video/<int:booking_id>')
+@bp.route('/video/<string:booking_id>')
 @login_required
 def video_call(booking_id):
     from app import db_firestore

@@ -12,7 +12,7 @@ class ReviewForm(FlaskForm):
     comment = TextAreaField('Comentario', validators=[DataRequired()])
     submit = SubmitField('Enviar reseña')
 
-@bp.route('/add/<int:tutor_id>', methods=['GET', 'POST'])
+@bp.route('/add/<string:tutor_id>', methods=['GET', 'POST'])
 @login_required
 def add_review(tutor_id):
     form = ReviewForm()
