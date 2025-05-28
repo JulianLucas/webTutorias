@@ -9,6 +9,7 @@ bp = Blueprint('student', __name__, url_prefix='/student')
 
 class SearchForm(FlaskForm):
     subject = StringField('Materia', validators=[DataRequired()])
+    horario = StringField('Horario (ej: Lunes 10:00)', validators=[DataRequired()])
     submit = SubmitField('Buscar')
 
 @bp.route('/dashboard', methods=['GET', 'POST'])
@@ -27,12 +28,16 @@ def dashboard():
 
     if form.validate_on_submit():
         subject = form.subject.data
-        # Buscar perfiles de tutor cuyo campo subjects contenga el texto buscado
+        horario = form.horario.data.lower()
         tutors_query = profiles_ref.stream()
         tutors = []
         for doc in tutors_query:
             profile = doc.to_dict()
-            if subject.lower() in profile.get('subjects', '').lower():
+            # Filtrar por materia y horario
+            subjects_match = subject.lower() in profile.get('subjects', '').lower()
+            availability = profile.get('availability', '').lower()
+            horario_match = horario in availability
+            if subjects_match and horario_match:
                 profile['id'] = doc.id
                 profile['username'] = get_username(profile.get('user_id'))
                 tutors.append(profile)

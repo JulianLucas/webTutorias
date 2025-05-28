@@ -5,7 +5,12 @@
 <form method="POST">
     {{ form.hidden_tag() }}
     <div class="mb-3">{{ form.subject.label }} {{ form.subject(class="form-control") }}</div>
-    <div class="mb-3">{{ form.datetime.label }} {{ form.datetime(class="form-control") }}</div>
-    <button type="submit" class="btn btn-primary">Solicitar</button>
+    <div class="mb-3">{{ form.horario.label }} {{ form.horario(class="form-control") }}</div>
+    {% if form.horario.choices|length == 0 %}
+        <div class="alert alert-warning">No hay horarios disponibles para este tutor.</div>
+        <button type="submit" class="btn btn-primary" disabled>Solicitar</button>
+    {% else %}
+        <button type="submit" class="btn btn-primary">Solicitar</button>
+    {% endif %}
 </form>
 {% endblock %}

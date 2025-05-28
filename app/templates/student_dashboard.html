@@ -5,6 +5,7 @@
 <form method="POST">
     {{ form.hidden_tag() }}
     <div class="mb-3">{{ form.subject.label }} {{ form.subject(class="form-control") }}</div>
+    <div class="mb-3">{{ form.horario.label }} {{ form.horario(class="form-control") }}</div>
     <button type="submit" class="btn btn-primary">Buscar</button>
 </form>
 <h4 class="mt-4">Tutores Disponibles</h4>

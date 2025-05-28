@@ -2,33 +2,57 @@ from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_required, current_user
 
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
+from wtforms import StringField, SubmitField, SelectField
 from wtforms.validators import DataRequired
 
 bp = Blueprint('booking', __name__, url_prefix='/booking')
 
 class BookingForm(FlaskForm):
     subject = StringField('Materia', validators=[DataRequired()])
-    datetime = StringField('Fecha y Hora', validators=[DataRequired()])
+    horario = SelectField('Horario disponible', validators=[DataRequired()], choices=[])
     submit = SubmitField('Solicitar Tutoría')
 
 @bp.route('/request/<string:tutor_id>', methods=['GET', 'POST'])
 @login_required
 def request_booking(tutor_id):
     from app import db_firestore
+    profiles_ref = db_firestore.collection('tutor_profiles')
+    doc = profiles_ref.document(tutor_id).get()
+    if not doc.exists:
+        flash('Perfil de tutor no encontrado')
+        return redirect(url_for('student.dashboard'))
+    tutor_profile = doc.to_dict()
+    tutor_profile['id'] = doc.id
+    # Obtener horarios disponibles del tutor
+    disponibilidad = tutor_profile.get('availability', '')
+    horarios = [h.strip() for h in disponibilidad.split(',') if h.strip()]
+    # Excluir horarios ocupados
+    bookings_ref = db_firestore.collection('bookings')
+    bookings_query = bookings_ref.where('tutor_profile_id', '==', tutor_profile['id']).stream()
+    horarios_ocupados = set()
+    for bdoc in bookings_query:
+        booking = bdoc.to_dict()
+        if booking.get('status') in ('pendiente', 'confirmada'):
+            horarios_ocupados.add(booking.get('datetime'))
+    horarios_disponibles = [h for h in horarios if h not in horarios_ocupados]
     form = BookingForm()
-    tutor_profile = TutorProfile.query.get_or_404(tutor_id)
+    form.horario.choices = [(h, h) for h in horarios_disponibles]
     if form.validate_on_submit():
+        # Validar que el horario esté en la disponibilidad del tutor
+        horario_seleccionado = form.horario.data
+        if horario_seleccionado not in horarios:
+            flash('El horario seleccionado no está disponible para este tutor')
+            return render_template('booking_request.html', form=form, tutor_profile=tutor_profile)
         # Generar nueva tutoría en Firestore
         booking_data = {
-            'tutor_profile_id': tutor_profile.id,
+            'tutor_profile_id': tutor_profile['id'],
             'student_id': current_user.id,
             'subject': form.subject.data,
-            'datetime': form.datetime.data,
+            'datetime': horario_seleccionado,
             'status': 'pendiente'
         }
-        doc_ref = db_firestore.collection('bookings').add(booking_data)
-        flash('Solicitud de tutoría enviada')
+        db_firestore.collection('bookings').add(booking_data)
+        flash(f'Solicitud de tutoría enviada para el horario "{horario_seleccionado}" con el tutor {tutor_profile.get("username", "")}')
         return redirect(url_for('student.dashboard'))
     return render_template('booking_request.html', form=form, tutor_profile=tutor_profile)
 
