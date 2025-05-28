@@ -4,6 +4,14 @@ from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from config import Config
 
+# --- Firebase Admin SDK ---
+import firebase_admin
+from firebase_admin import credentials, firestore
+
+cred = credentials.Certificate('serviceAccountKey.json')
+firebase_admin.initialize_app(cred)
+db_firestore = firestore.client()
+
 # Inicialización de extensiones
 login_manager = LoginManager()
 db = SQLAlchemy()
