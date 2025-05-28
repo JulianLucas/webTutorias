@@ -12,7 +12,7 @@ class BookingForm(FlaskForm):
     datetime = StringField('Fecha y Hora', validators=[DataRequired()])
     submit = SubmitField('Solicitar Tutoría')
 
-@bp.route('/request/<int:tutor_id>', methods=['GET', 'POST'])
+@bp.route('/request/<string:tutor_id>', methods=['GET', 'POST'])
 @login_required
 def request_booking(tutor_id):
     from app import db_firestore
