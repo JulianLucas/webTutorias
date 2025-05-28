@@ -1,5 +1,5 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+
 from flask_login import LoginManager
 from flask_wtf.csrf import CSRFProtect
 from config import Config
@@ -14,7 +14,7 @@ db_firestore = firestore.client()
 
 # Inicialización de extensiones
 login_manager = LoginManager()
-db = SQLAlchemy()
+
 csrf = CSRFProtect()
 
 def create_app():
