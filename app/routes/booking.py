@@ -67,16 +67,17 @@ def confirm_booking(booking_id):
     from app import db_firestore
     # Buscar booking en Firestore por ID
     bookings_ref = db_firestore.collection('bookings')
-    docs = bookings_ref.where('__name__', '==', str(booking_id)).stream()
-    booking_doc = next(docs, None)
-    if booking_doc:
+    booking_doc = bookings_ref.document(str(booking_id)).get()
+    if booking_doc.exists:
         booking = booking_doc.to_dict()
-        # Verificar que el usuario es el tutor asignado
-        from ..models import TutorProfile
-        tutor_profile = TutorProfile.query.get(booking['tutor_profile_id'])
-        if current_user.is_tutor and tutor_profile and tutor_profile.user_id == current_user.id:
-            bookings_ref.document(booking_doc.id).update({'status': 'confirmada'})
-            flash('Tutoría confirmada')
+        # Verificar que el usuario es el tutor asignado (por user_id en el perfil de tutor Firestore)
+        profiles_ref = db_firestore.collection('tutor_profiles')
+        tutor_profile_doc = profiles_ref.document(booking['tutor_profile_id']).get()
+        if tutor_profile_doc.exists:
+            tutor_profile = tutor_profile_doc.to_dict()
+            if current_user.is_tutor and tutor_profile.get('user_id') == current_user.id:
+                bookings_ref.document(booking_doc.id).update({'status': 'confirmada'})
+                flash('Tutoría confirmada')
     return redirect(url_for('tutor.dashboard'))
 
 
