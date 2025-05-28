@@ -18,13 +18,19 @@ class TutorProfileForm(FlaskForm):
 def dashboard():
     if not current_user.is_tutor:
         return redirect(url_for('student.dashboard'))
-    profile = TutorProfile.query.filter_by(user_id=current_user.id).first()
+    # Obtener perfil del tutor desde Firestore
+    from app import db_firestore
+    profiles_ref = db_firestore.collection('tutor_profiles')
+    existing = list(profiles_ref.where('user_id', '==', current_user.id).stream())
+    profile_doc = existing[0] if existing else None
+    profile = profile_doc.to_dict() if profile_doc else None
+    if profile:
+        profile['id'] = profile_doc.id
     # Consultar las tutorías del tutor desde Firestore
     bookings = []
     if profile:
-        from app import db_firestore
         bookings_ref = db_firestore.collection('bookings')
-        bookings_query = bookings_ref.where('tutor_profile_id', '==', profile.id).stream()
+        bookings_query = bookings_ref.where('tutor_profile_id', '==', profile['id']).stream()
         for doc in bookings_query:
             booking = doc.to_dict()
             booking['id'] = doc.id
