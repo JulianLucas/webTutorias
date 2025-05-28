@@ -15,36 +15,55 @@ class BookingForm(FlaskForm):
 @bp.route('/request/<int:tutor_id>', methods=['GET', 'POST'])
 @login_required
 def request_booking(tutor_id):
+    from app import db_firestore
     form = BookingForm()
     tutor_profile = TutorProfile.query.get_or_404(tutor_id)
     if form.validate_on_submit():
-        booking = Booking(
-            tutor_profile_id=tutor_profile.id,
-            student_id=current_user.id,
-            subject=form.subject.data,
-            datetime=form.datetime.data,
-            status='pendiente'
-        )
-        db.session.add(booking)
-        db.session.commit()
+        # Generar nueva tutoría en Firestore
+        booking_data = {
+            'tutor_profile_id': tutor_profile.id,
+            'student_id': current_user.id,
+            'subject': form.subject.data,
+            'datetime': form.datetime.data,
+            'status': 'pendiente'
+        }
+        doc_ref = db_firestore.collection('bookings').add(booking_data)
         flash('Solicitud de tutoría enviada')
         return redirect(url_for('student.dashboard'))
     return render_template('booking_request.html', form=form, tutor_profile=tutor_profile)
 
+
 @bp.route('/confirm/<int:booking_id>')
 @login_required
 def confirm_booking(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    if current_user.is_tutor and booking.tutor_profile.user_id == current_user.id:
-        booking.status = 'confirmada'
-        db.session.commit()
-        flash('Tutoría confirmada')
+    from app import db_firestore
+    # Buscar booking en Firestore por ID
+    bookings_ref = db_firestore.collection('bookings')
+    docs = bookings_ref.where('__name__', '==', str(booking_id)).stream()
+    booking_doc = next(docs, None)
+    if booking_doc:
+        booking = booking_doc.to_dict()
+        # Verificar que el usuario es el tutor asignado
+        from ..models import TutorProfile
+        tutor_profile = TutorProfile.query.get(booking['tutor_profile_id'])
+        if current_user.is_tutor and tutor_profile and tutor_profile.user_id == current_user.id:
+            bookings_ref.document(booking_doc.id).update({'status': 'confirmada'})
+            flash('Tutoría confirmada')
     return redirect(url_for('tutor.dashboard'))
+
 
 @bp.route('/video/<int:booking_id>')
 @login_required
 def video_call(booking_id):
-    booking = Booking.query.get_or_404(booking_id)
-    # Enlace a Jitsi Meet usando el ID de la tutoría como room name
-    jitsi_url = f'https://meet.jit.si/tutoria_{booking.id}'
+    from app import db_firestore
+    # Buscar booking en Firestore por ID
+    bookings_ref = db_firestore.collection('bookings')
+    docs = bookings_ref.where('__name__', '==', str(booking_id)).stream()
+    booking_doc = next(docs, None)
+    if not booking_doc:
+        flash('Tutoría no encontrada')
+        return redirect(url_for('student.dashboard'))
+    booking = booking_doc.to_dict()
+    jitsi_url = f'https://meet.jit.si/tutoria_{booking_id}'
     return render_template('video_call.html', jitsi_url=jitsi_url, booking=booking)
+

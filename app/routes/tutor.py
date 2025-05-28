@@ -19,24 +19,44 @@ def dashboard():
     if not current_user.is_tutor:
         return redirect(url_for('student.dashboard'))
     profile = TutorProfile.query.filter_by(user_id=current_user.id).first()
-    bookings = Booking.query.filter_by(tutor_profile_id=profile.id).all() if profile else []
+    # Consultar las tutorías del tutor desde Firestore
+    bookings = []
+    if profile:
+        from app import db_firestore
+        bookings_ref = db_firestore.collection('bookings')
+        bookings_query = bookings_ref.where('tutor_profile_id', '==', profile.id).stream()
+        for doc in bookings_query:
+            booking = doc.to_dict()
+            booking['id'] = doc.id
+            bookings.append(booking)
     return render_template('tutor_dashboard.html', profile=profile, bookings=bookings)
+
 
 @bp.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
-    if not current_user.is_tutor:
-        return redirect(url_for('student.dashboard'))
-    profile = TutorProfile.query.filter_by(user_id=current_user.id).first()
-    form = TutorProfileForm(obj=profile)
+    from app import db_firestore
+    form = TutorProfileForm()
+    profiles_ref = db_firestore.collection('tutor_profiles')
+    # Buscar perfil por user_id
+    existing = list(profiles_ref.where('user_id', '==', current_user.id).stream())
+    profile_doc = existing[0] if existing else None
+    profile = profile_doc.to_dict() if profile_doc else None
     if form.validate_on_submit():
-        if not profile:
-            profile = TutorProfile(user_id=current_user.id)
-            db.session.add(profile)
-        profile.bio = form.bio.data
-        profile.subjects = form.subjects.data
-        profile.availability = form.availability.data
-        db.session.commit()
+        profile_data = {
+            'user_id': current_user.id,
+            'bio': form.bio.data,
+            'subjects': form.subjects.data,
+            'availability': form.availability.data
+        }
+        if profile_doc:
+            profiles_ref.document(profile_doc.id).set(profile_data)
+        else:
+            profiles_ref.add(profile_data)
         flash('Perfil actualizado')
         return redirect(url_for('tutor.dashboard'))
+    if profile:
+        form.bio.data = profile.get('bio', '')
+        form.subjects.data = profile.get('subjects', '')
+        form.availability.data = profile.get('availability', '')
     return render_template('tutor_profile.html', form=form, profile=profile)

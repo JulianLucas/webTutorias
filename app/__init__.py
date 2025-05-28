@@ -21,7 +21,26 @@ def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
 
-    db.init_app(app)
+    # SQLAlchemy eliminado. Toda la persistencia es en Firestore.
+    @login_manager.user_loader
+    def load_user(user_id):
+        from app import db_firestore
+        from flask_login import UserMixin
+        users_ref = db_firestore.collection('users')
+        doc = users_ref.document(user_id).get()
+        if doc.exists:
+            data = doc.to_dict()
+            class FirestoreUser(UserMixin):
+                pass
+            user = FirestoreUser()
+            user.id = doc.id
+            user.username = data['username']
+            user.email = data['email']
+            user.password_hash = data['password_hash']
+            user.is_tutor = data.get('is_tutor', False)
+            return user
+        return None
+
     login_manager.init_app(app)
     csrf.init_app(app)
 

@@ -28,35 +28,54 @@ def load_user(user_id):
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
+    from app import db_firestore
     form = RegisterForm()
     if form.validate_on_submit():
-        if User.query.filter_by(username=form.username.data).first():
+        # Buscar usuario por username en Firestore
+        users_ref = db_firestore.collection('users')
+        existing = list(users_ref.where('username', '==', form.username.data).stream())
+        if existing:
             flash('El usuario ya existe')
             return redirect(url_for('auth.register'))
-        user = User(
-            username=form.username.data,
-            email=form.email.data,
-            password_hash=generate_password_hash(form.password.data),
-            is_tutor=form.is_tutor.data
-        )
-        db.session.add(user)
-        db.session.commit()
+        # Crear usuario en Firestore
+        user_data = {
+            'username': form.username.data,
+            'email': form.email.data,
+            'password_hash': generate_password_hash(form.password.data),
+            'is_tutor': form.is_tutor.data
+        }
+        users_ref.add(user_data)
         flash('Registro exitoso. Ahora puedes iniciar sesión.')
         return redirect(url_for('auth.login'))
     return render_template('register.html', form=form)
 
+
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
+    from app import db_firestore
+    from flask_login import UserMixin
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user and check_password_hash(user.password_hash, form.password.data):
-            login_user(user)
-            flash('Bienvenido, ' + user.username)
-            return redirect(url_for('tutor.dashboard' if user.is_tutor else 'student.dashboard'))
-        else:
-            flash('Usuario o contraseña incorrectos')
+        users_ref = db_firestore.collection('users')
+        user_docs = list(users_ref.where('username', '==', form.username.data).stream())
+        if user_docs:
+            user_data = user_docs[0].to_dict()
+            # Clase temporal para Flask-Login
+            class FirestoreUser(UserMixin):
+                pass
+            user = FirestoreUser()
+            user.id = user_docs[0].id
+            user.username = user_data['username']
+            user.email = user_data['email']
+            user.password_hash = user_data['password_hash']
+            user.is_tutor = user_data.get('is_tutor', False)
+            if check_password_hash(user.password_hash, form.password.data):
+                login_user(user)
+                flash('Bienvenido, ' + user.username)
+                return redirect(url_for('tutor.dashboard' if user.is_tutor else 'student.dashboard'))
+        flash('Usuario o contraseña incorrectos')
     return render_template('login.html', form=form)
+
 
 @bp.route('/logout')
 @login_required
