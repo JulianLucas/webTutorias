@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Solicitar Tutoría{% endblock %}
 {% block content %}
-<h2>Solicitar Tutoría con {{ tutor_profile.user.username }}</h2>
+<h2>Solicitar Tutoría con {{ tutor_profile.username }}</h2>
 <form method="POST">
     {{ form.hidden_tag() }}
     <div class="mb-3">{{ form.subject.label }} {{ form.subject(class="form-control") }}</div>

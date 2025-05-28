@@ -23,6 +23,10 @@ def request_booking(tutor_id):
         return redirect(url_for('student.dashboard'))
     tutor_profile = doc.to_dict()
     tutor_profile['id'] = doc.id
+    # Obtener el nombre de usuario del tutor
+    users_ref = db_firestore.collection('users')
+    user_doc = users_ref.document(str(tutor_profile.get('user_id'))).get()
+    tutor_profile['username'] = user_doc.to_dict().get('username', 'Tutor') if user_doc.exists else 'Tutor'
     # Obtener horarios disponibles del tutor
     disponibilidad = tutor_profile.get('availability', '')
     horarios = [h.strip() for h in disponibilidad.split(',') if h.strip()]
