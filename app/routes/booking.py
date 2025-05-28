@@ -87,9 +87,8 @@ def video_call(booking_id):
     from app import db_firestore
     # Buscar booking en Firestore por ID
     bookings_ref = db_firestore.collection('bookings')
-    docs = bookings_ref.where('__name__', '==', str(booking_id)).stream()
-    booking_doc = next(docs, None)
-    if not booking_doc:
+    booking_doc = bookings_ref.document(str(booking_id)).get()
+    if not booking_doc.exists:
         flash('Tutoría no encontrada')
         return redirect(url_for('student.dashboard'))
     booking = booking_doc.to_dict()

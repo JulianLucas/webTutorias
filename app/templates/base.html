@@ -10,14 +10,34 @@
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
       <div class="container-fluid">
         <a class="navbar-brand" href="/">Tutorías</a>
-        <div>
-          {% if current_user.is_authenticated %}
-            <span class="me-2">Hola, {{ current_user.username }}</span>
-            <a class="btn btn-outline-danger btn-sm" href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
-          {% else %}
-            <a class="btn btn-outline-primary btn-sm" href="{{ url_for('auth.login') }}">Iniciar sesión</a>
-            <a class="btn btn-outline-success btn-sm" href="{{ url_for('auth.register') }}">Registrarse</a>
-          {% endif %}
+        <div class="collapse navbar-collapse">
+          <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            {% if current_user.is_authenticated %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('student.dashboard') }}">Panel Estudiante</a>
+              </li>
+              {% if current_user.is_tutor %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('tutor.dashboard') }}">Panel Tutor</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('tutor.profile') }}">Perfil Tutor</a>
+              </li>
+              {% endif %}
+            {% endif %}
+            <li class="nav-item">
+              <a class="nav-link" href="/">Inicio</a>
+            </li>
+          </ul>
+          <div>
+            {% if current_user.is_authenticated %}
+              <span class="me-2">Hola, {{ current_user.username }}</span>
+              <a class="btn btn-outline-danger btn-sm" href="{{ url_for('auth.logout') }}">Cerrar sesión</a>
+            {% else %}
+              <a class="btn btn-outline-primary btn-sm" href="{{ url_for('auth.login') }}">Iniciar sesión</a>
+              <a class="btn btn-outline-success btn-sm" href="{{ url_for('auth.register') }}">Registrarse</a>
+            {% endif %}
+          </div>
         </div>
       </div>
     </nav>

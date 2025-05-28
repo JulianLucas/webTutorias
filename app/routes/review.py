@@ -15,17 +15,24 @@ class ReviewForm(FlaskForm):
 @bp.route('/add/<string:tutor_id>', methods=['GET', 'POST'])
 @login_required
 def add_review(tutor_id):
+    from app import db_firestore
     form = ReviewForm()
-    tutor_profile = TutorProfile.query.get_or_404(tutor_id)
+    # Obtener perfil del tutor desde Firestore
+    profiles_ref = db_firestore.collection('tutor_profiles')
+    doc = profiles_ref.document(tutor_id).get()
+    if not doc.exists:
+        flash('Perfil de tutor no encontrado')
+        return redirect(url_for('student.dashboard'))
+    tutor_profile = doc.to_dict()
+    tutor_profile['id'] = doc.id
     if form.validate_on_submit():
-        review = Review(
-            tutor_id=tutor_profile.id,
-            student_id=current_user.id,
-            rating=form.rating.data,
-            comment=form.comment.data
-        )
-        db.session.add(review)
-        db.session.commit()
+        review_data = {
+            'tutor_profile_id': tutor_profile['id'],
+            'student_id': current_user.id,
+            'rating': form.rating.data,
+            'comment': form.comment.data
+        }
+        db_firestore.collection('reviews').add(review_data)
         flash('Reseña enviada')
         return redirect(url_for('student.dashboard'))
     return render_template('add_review.html', form=form, tutor_profile=tutor_profile)
