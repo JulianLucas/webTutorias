@@ -18,6 +18,13 @@ def dashboard():
     tutors = []
     from app import db_firestore
     profiles_ref = db_firestore.collection('tutor_profiles')
+    users_ref = db_firestore.collection('users')
+    def get_username(user_id):
+        user_doc = users_ref.document(str(user_id)).get()
+        if user_doc.exists:
+            return user_doc.to_dict().get('username', 'Tutor')
+        return 'Tutor'
+
     if form.validate_on_submit():
         subject = form.subject.data
         # Buscar perfiles de tutor cuyo campo subjects contenga el texto buscado
@@ -27,6 +34,7 @@ def dashboard():
             profile = doc.to_dict()
             if subject.lower() in profile.get('subjects', '').lower():
                 profile['id'] = doc.id
+                profile['username'] = get_username(profile.get('user_id'))
                 tutors.append(profile)
     else:
         # Traer todos los perfiles de tutor
@@ -34,6 +42,7 @@ def dashboard():
         for doc in profiles_ref.stream():
             profile = doc.to_dict()
             profile['id'] = doc.id
+            profile['username'] = get_username(profile.get('user_id'))
             tutors.append(profile)
 
     # Obtener las tutorías del estudiante desde Firestore
