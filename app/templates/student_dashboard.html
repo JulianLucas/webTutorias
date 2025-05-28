@@ -17,4 +17,19 @@
     </li>
   {% endfor %}
 </ul>
+
+<hr>
+<h4 class="mt-4">Mis Tutorías Agendadas</h4>
+<ul>
+  {% for booking in bookings %}
+    <li>
+      <strong>{{ booking.subject }}</strong> | {{ booking.datetime }} | Estado: {{ booking.status }}
+      {% if booking.status == 'confirmada' %}
+        <a href="https://meet.jit.si/tutoria_{{ booking.id }}" target="_blank" class="btn btn-primary btn-sm">Unirse a la videollamada</a>
+      {% endif %}
+    </li>
+  {% else %}
+    <li>No tienes tutorías agendadas.</li>
+  {% endfor %}
+</ul>
 {% endblock %}

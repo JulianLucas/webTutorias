@@ -21,4 +21,8 @@ def dashboard():
         tutors = TutorProfile.query.filter(TutorProfile.subjects.ilike(f'%{subject}%')).all()
     else:
         tutors = TutorProfile.query.all()
-    return render_template('student_dashboard.html', form=form, tutors=tutors)
+    # Obtener las tutorías del estudiante
+    from ..models import Booking
+    bookings = Booking.query.filter_by(student_id=current_user.id).all()
+    return render_template('student_dashboard.html', form=form, tutors=tutors, bookings=bookings)
+
