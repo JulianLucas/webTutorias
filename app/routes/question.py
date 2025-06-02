@@ -3,6 +3,9 @@ from flask_login import login_required, current_user
 from app import db_firestore
 import requests
 import os
+import logging
+logger = logging.getLogger("webtutorias-debug")
+logging.basicConfig(level=logging.WARNING)
 
 bp = Blueprint('question', __name__, url_prefix='/question')
 
@@ -11,11 +14,11 @@ N8N_WEBHOOK_URL = "https://juli4n.app.n8n.cloud/webhook-test/80b9035a-4634-4ecb-
 @bp.route('/ask', methods=['POST'])
 @login_required
 def ask_question():
-    print("HEADERS:", dict(request.headers))
-    print("RAW DATA:", request.data)
+    logger.warning(f"HEADERS: {dict(request.headers)}")
+    logger.warning(f"RAW DATA: {request.data}")
     # Forzamos a Flask a interpretar el cuerpo como JSON
     data = request.get_json(force=True, silent=True)
-    print("JSON (forced):", data)
+    logger.warning(f"JSON (forced): {data}")
     pregunta = data.get('pregunta') if data else None
     # Eliminamos la validación para aceptar cualquier payload
     pregunta_data = {
