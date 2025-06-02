@@ -11,9 +11,13 @@ N8N_WEBHOOK_URL = "https://juli4n.app.n8n.cloud/webhook-test/80b9035a-4634-4ecb-
 @bp.route('/ask', methods=['POST'])
 @login_required
 def ask_question():
+    print("HEADERS:", dict(request.headers))
+    print("RAW DATA:", request.data)
+    print("JSON:", request.json)
     data = request.json
-    pregunta = data.get('pregunta')
+    pregunta = data.get('pregunta') if data else None
     if not pregunta:
+        print("ERROR: La pregunta es obligatoria")
         return jsonify({'error': 'La pregunta es obligatoria'}), 400
     pregunta_data = {
         'pregunta': pregunta,
