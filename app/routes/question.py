@@ -16,32 +16,10 @@ N8N_WEBHOOK_URL = "https://juli4n.app.n8n.cloud/webhook-test/80b9035a-4634-4ecb-
 def ask_question():
     logger.warning(f"HEADERS: {dict(request.headers)}")
     logger.warning(f"RAW DATA: {request.data}")
-    # Forzamos a Flask a interpretar el cuerpo como JSON
     data = request.get_json(force=True, silent=True)
     logger.warning(f"JSON (forced): {data}")
-    pregunta = data.get('pregunta') if data else None
-    # Eliminamos la validación para aceptar cualquier payload
-    pregunta_data = {
-        'pregunta': pregunta,
-        'estudiante_id': current_user.id,
-        'email': getattr(current_user, 'email', None),
-        'respuesta': None,
-        'estado': 'pendiente'
-    }
-    doc_ref = db_firestore.collection('preguntas').add(pregunta_data)
-    pregunta_id = doc_ref[1].id
-    # Enviar a n8n
-    try:
-        requests.post(N8N_WEBHOOK_URL, json={
-            'pregunta': pregunta,
-            'pregunta_id': pregunta_id,
-            'estudiante_id': current_user.id,
-            'email': getattr(current_user, 'email', None)
-        }, timeout=5)
-    except Exception as e:
-        # No es crítico si falla el webhook, pero lo registramos
-        print(f"Error enviando a n8n: {e}")
-    return jsonify({'status': 'ok', 'pregunta_id': pregunta_id})
+    # No procesamos ni guardamos la pregunta, solo respondemos éxito
+    return jsonify({'status': 'ok', 'message': 'Pregunta recibida (dummy endpoint)'})
 
 @bp.route('/respuesta', methods=['POST'])
 def recibir_respuesta():
