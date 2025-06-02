@@ -47,6 +47,7 @@ def ask_question():
     return jsonify({'status': 'ok', 'pregunta_id': pregunta_id})
 
 @bp.route('/respuesta', methods=['POST'])
+@csrf.exempt
 def recibir_respuesta():
     data = request.json
     pregunta_id = data.get('pregunta_id')
