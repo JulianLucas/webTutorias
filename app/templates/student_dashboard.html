@@ -42,6 +42,60 @@
   </div>
 </div>
 
+<script>
+  console.log('Script IA cargado');
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('ia-question-form');
+    const answerDiv = document.getElementById('ia-answer-result');
+    const answerText = document.getElementById('ia-answer-text');
+    const loadingDiv = document.getElementById('ia-answer-loading');
+    if (!form) { console.log('No se encontró el formulario de IA'); return; }
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      answerDiv.style.display = 'none';
+      answerText.textContent = '';
+      loadingDiv.style.display = 'block';
+      const pregunta = document.getElementById('ia-question').value;
+      try {
+        const BASE_URL = 'https://webtutorias.onrender.com';
+        const resp = await fetch(`${BASE_URL}/question/ask`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({pregunta}),
+          credentials: 'include'
+        });
+        const data = await resp.json();
+        if (!data.pregunta_id) throw new Error('No se pudo registrar la pregunta.');
+        // Polling para obtener la respuesta
+        let respuesta = null;
+        for (let i = 0; i < 20; i++) { // Espera hasta 20s
+          await new Promise(res => setTimeout(res, 1000));
+          const check = await fetch(`${BASE_URL}/question/status/${data.pregunta_id}`, {
+            credentials: 'include'
+          });
+          const checkData = await check.json();
+          if (checkData.respuesta) {
+            respuesta = checkData.respuesta;
+            break;
+          }
+        }
+        loadingDiv.style.display = 'none';
+        if (respuesta) {
+          answerText.textContent = respuesta;
+          answerDiv.style.display = 'block';
+        } else {
+          answerText.textContent = 'La respuesta está tardando más de lo esperado. Intenta recargar en unos segundos.';
+          answerDiv.style.display = 'block';
+        }
+      } catch (err) {
+        loadingDiv.style.display = 'none';
+        answerText.textContent = 'Error: ' + err.message;
+        answerDiv.style.display = 'block';
+      }
+    });
+  });
+</script>
+
 <h4 class="mt-4">Tutores Disponibles</h4>
 <ul>
   {% for tutor in tutors %}
