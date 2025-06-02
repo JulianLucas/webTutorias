@@ -24,8 +24,27 @@ def ask_question():
     pregunta = data.get('pregunta') if data else None
     if not pregunta:
         return jsonify({'error': 'La pregunta es obligatoria'}), 400
-    # Dummy: responde con pregunta_id fijo para pruebas
-    return jsonify({'status': 'ok', 'pregunta_id': 'dummy_id'})
+    pregunta_data = {
+        'pregunta': pregunta,
+        'estudiante_id': current_user.id,
+        'email': getattr(current_user, 'email', None),
+        'respuesta': None,
+        'estado': 'pendiente'
+    }
+    doc_ref = db_firestore.collection('preguntas').add(pregunta_data)
+    pregunta_id = doc_ref[1].id
+    # Enviar a n8n
+    try:
+        import requests
+        requests.post(N8N_WEBHOOK_URL, json={
+            'pregunta': pregunta,
+            'pregunta_id': pregunta_id,
+            'estudiante_id': current_user.id,
+            'email': getattr(current_user, 'email', None)
+        }, timeout=5)
+    except Exception as e:
+        logger.warning(f"Error enviando a n8n: {e}")
+    return jsonify({'status': 'ok', 'pregunta_id': pregunta_id})
 
 @bp.route('/respuesta', methods=['POST'])
 def recibir_respuesta():
