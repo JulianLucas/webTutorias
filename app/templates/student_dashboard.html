@@ -36,7 +36,8 @@
       loadingDiv.style.display = 'block';
       const pregunta = document.getElementById('ia-question').value;
       try {
-        const resp = await fetch('/question/ask', {
+        const BASE_URL = 'https://webtutorias.onrender.com';
+        const resp = await fetch(`${BASE_URL}/question/ask`, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify({pregunta})
@@ -47,7 +48,7 @@
         let respuesta = null;
         for (let i = 0; i < 20; i++) { // Espera hasta 20s
           await new Promise(res => setTimeout(res, 1000));
-          const check = await fetch(`/question/status/${data.pregunta_id}`);
+          const check = await fetch(`${BASE_URL}/question/status/${data.pregunta_id}`);
           const checkData = await check.json();
           if (checkData.respuesta) {
             respuesta = checkData.respuesta;
