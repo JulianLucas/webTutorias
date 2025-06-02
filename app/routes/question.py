@@ -6,7 +6,6 @@ import os
 
 bp = Blueprint('question', __name__, url_prefix='/question')
 
-# Cambia esto por la URL de tu webhook de n8n
 N8N_WEBHOOK_URL = "https://juli4n.app.n8n.cloud/webhook-test/80b9035a-4634-4ecb-a421-531d97b4979f"
 
 @bp.route('/ask', methods=['POST'])
