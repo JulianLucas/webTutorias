@@ -64,7 +64,16 @@
           body: JSON.stringify({pregunta}),
           credentials: 'include'
         });
-        const data = await resp.json();
+        let data;
+        try {
+          data = await resp.json();
+        } catch (e) {
+          const text = await resp.text();
+          throw new Error('Respuesta inesperada del servidor: ' + text.substring(0, 100));
+        }
+        if (resp.status !== 200) {
+          throw new Error(data.error || 'Error desconocido');
+        }
         if (!data.pregunta_id) throw new Error('No se pudo registrar la pregunta.');
         // Polling para obtener la respuesta
         let respuesta = null;

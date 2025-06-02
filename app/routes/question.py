@@ -18,8 +18,11 @@ def ask_question():
     logger.warning(f"RAW DATA: {request.data}")
     data = request.get_json(force=True, silent=True)
     logger.warning(f"JSON (forced): {data}")
-    # No procesamos ni guardamos la pregunta, solo respondemos éxito
-    return jsonify({'status': 'ok', 'message': 'Pregunta recibida (dummy endpoint)'})
+    pregunta = data.get('pregunta') if data else None
+    if not pregunta:
+        return jsonify({'error': 'La pregunta es obligatoria'}), 400
+    # Dummy: responde con pregunta_id fijo para pruebas
+    return jsonify({'status': 'ok', 'pregunta_id': 'dummy_id'})
 
 @bp.route('/respuesta', methods=['POST'])
 def recibir_respuesta():
