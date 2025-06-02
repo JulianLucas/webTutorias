@@ -2,6 +2,75 @@
 {% block title %}Panel Estudiante{% endblock %}
 {% block content %}
 <h2>Panel del Estudiante</h2>
+
+<!-- Formulario de Pregunta IA -->
+<div class="card mb-4">
+  <div class="card-body">
+    <h5 class="card-title">¿Tienes una duda? Pregunta a la IA</h5>
+    <form id="ia-question-form">
+      <div class="mb-3">
+        <label for="ia-question" class="form-label">Tu pregunta</label>
+        <input type="text" id="ia-question" name="pregunta" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-info">Preguntar a la IA</button>
+    </form>
+    <div id="ia-answer-result" class="mt-3" style="display:none;">
+      <strong>Respuesta de la IA:</strong>
+      <span id="ia-answer-text"></span>
+    </div>
+    <div id="ia-answer-loading" class="mt-3" style="display:none;">
+      <span class="spinner-border spinner-border-sm"></span> Procesando pregunta...
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('ia-question-form');
+    const answerDiv = document.getElementById('ia-answer-result');
+    const answerText = document.getElementById('ia-answer-text');
+    const loadingDiv = document.getElementById('ia-answer-loading');
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      answerDiv.style.display = 'none';
+      answerText.textContent = '';
+      loadingDiv.style.display = 'block';
+      const pregunta = document.getElementById('ia-question').value;
+      try {
+        const resp = await fetch('/question/ask', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({pregunta})
+        });
+        const data = await resp.json();
+        if (!data.pregunta_id) throw new Error('No se pudo registrar la pregunta.');
+        // Polling para obtener la respuesta
+        let respuesta = null;
+        for (let i = 0; i < 20; i++) { // Espera hasta 20s
+          await new Promise(res => setTimeout(res, 1000));
+          const check = await fetch(`/question/status/${data.pregunta_id}`);
+          const checkData = await check.json();
+          if (checkData.respuesta) {
+            respuesta = checkData.respuesta;
+            break;
+          }
+        }
+        loadingDiv.style.display = 'none';
+        if (respuesta) {
+          answerText.textContent = respuesta;
+          answerDiv.style.display = 'block';
+        } else {
+          answerText.textContent = 'La respuesta está tardando más de lo esperado. Intenta recargar en unos segundos.';
+          answerDiv.style.display = 'block';
+        }
+      } catch (err) {
+        loadingDiv.style.display = 'none';
+        answerText.textContent = 'Error: ' + err.message;
+        answerDiv.style.display = 'block';
+      }
+    });
+  });
+</script>
+
 <form method="POST">
     {{ form.hidden_tag() }}
     <div class="mb-3">{{ form.subject.label }} {{ form.subject(class="form-control") }}</div>
