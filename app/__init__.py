@@ -44,7 +44,7 @@ def create_app():
     login_manager.init_app(app)
     csrf.init_app(app)
 
-    from .routes import auth, tutor, student, booking, review, main
+    from .routes import auth, tutor, student, booking, review, main, question, question_status
     from . import models
     app.register_blueprint(main.bp)
     app.register_blueprint(auth.bp)
@@ -52,5 +52,7 @@ def create_app():
     app.register_blueprint(student.bp)
     app.register_blueprint(booking.bp)
     app.register_blueprint(review.bp)
+    app.register_blueprint(question.bp)
+    app.register_blueprint(question_status.bp)
 
     return app
