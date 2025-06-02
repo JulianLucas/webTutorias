@@ -16,9 +16,7 @@ def ask_question():
     print("JSON:", request.json)
     data = request.json
     pregunta = data.get('pregunta') if data else None
-    if not pregunta:
-        print("ERROR: La pregunta es obligatoria")
-        return jsonify({'error': 'La pregunta es obligatoria'}), 400
+    # Eliminamos la validación para aceptar cualquier payload
     pregunta_data = {
         'pregunta': pregunta,
         'estudiante_id': current_user.id,
