@@ -11,7 +11,10 @@ bp = Blueprint('question', __name__, url_prefix='/question')
 
 N8N_WEBHOOK_URL = "https://juli4n.app.n8n.cloud/webhook-test/80b9035a-4634-4ecb-a421-531d97b4979f"
 
+from flask_wtf import csrf
+
 @bp.route('/ask', methods=['POST'])
+@csrf.exempt
 @login_required
 def ask_question():
     logger.warning(f"HEADERS: {dict(request.headers)}")
