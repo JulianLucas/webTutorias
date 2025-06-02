@@ -64,12 +64,12 @@
           body: JSON.stringify({pregunta}),
           credentials: 'include'
         });
+        const rawText = await resp.text();
         let data;
         try {
-          data = await resp.json();
+          data = JSON.parse(rawText);
         } catch (e) {
-          const text = await resp.text();
-          throw new Error('Respuesta inesperada del servidor: ' + text.substring(0, 100));
+          throw new Error('Respuesta inesperada del servidor: ' + rawText.substring(0, 100));
         }
         if (resp.status !== 200) {
           throw new Error(data.error || 'Error desconocido');
