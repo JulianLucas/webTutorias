@@ -2,18 +2,41 @@
 {% block title %}Panel Tutor{% endblock %}
 {% block content %}
 <h2>Panel del Tutor</h2>
-<a href="{{ url_for('tutor.profile') }}" class="btn btn-info mb-3">Editar Perfil</a>
+<a href="{{ url_for('tutor.profile') }}" class="btn btn-info mb-3 d-flex align-items-center">
+  <i class="bi bi-pencil-square me-1"></i> Editar Perfil
+</a>
 <h4>Solicitudes de Tutoría</h4>
-<ul>
+<div class="row row-cols-1 row-cols-md-2 g-3">
   {% for booking in bookings %}
-    <li>
-      {{ booking.subject }} | {{ booking.datetime }} | Estado: {{ booking.status }}
-      {% if booking.status == 'pendiente' %}
-        <a href="{{ url_for('booking.confirm_booking', booking_id=booking.id) }}" class="btn btn-success btn-sm">Confirmar</a>
-      {% elif booking.status == 'confirmada' %}
-        <a href="{{ url_for('booking.video_call', booking_id=booking.id) }}" class="btn btn-primary btn-sm">Videollamada</a>
-      {% endif %}
-    </li>
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="bi bi-journal-text me-1"></i> {{ booking.subject }}
+          </h5>
+          <p class="card-text mb-1">
+            <i class="bi bi-calendar-event me-1"></i> {{ booking.datetime }}
+          </p>
+          <span class="badge 
+            {% if booking.status == 'confirmada' %}bg-success
+            {% elif booking.status == 'pendiente' %}bg-warning text-dark
+            {% else %}bg-secondary{% endif %}">
+            <i class="bi bi-info-circle me-1"></i> Estado: {{ booking.status|capitalize }}
+          </span>
+        </div>
+        <div class="card-footer bg-white border-0">
+          {% if booking.status == 'pendiente' %}
+            <a href="{{ url_for('booking.confirm_booking', booking_id=booking.id) }}" class="btn btn-success btn-sm d-flex align-items-center">
+              <i class="bi bi-check-circle me-1"></i> Confirmar
+            </a>
+          {% elif booking.status == 'confirmada' %}
+            <a href="{{ url_for('booking.video_call', booking_id=booking.id) }}" class="btn btn-primary btn-sm d-flex align-items-center">
+              <i class="bi bi-camera-video me-1"></i> Videollamada
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
   {% endfor %}
-</ul>
+</div>
 {% endblock %}

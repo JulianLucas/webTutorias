@@ -142,16 +142,35 @@
 
 <hr>
 <h4 class="mt-4">Mis Tutorías Agendadas</h4>
-<ul>
+<div class="row row-cols-1 row-cols-md-2 g-3">
   {% for booking in bookings %}
-    <li>
-      <strong>{{ booking.subject }}</strong> | {{ booking.datetime }} | Estado: {{ booking.status }}
-      {% if booking.status == 'confirmada' %}
-        <a href="https://meet.jit.si/tutoria_{{ booking.id }}" target="_blank" class="btn btn-primary btn-sm">Unirse a la videollamada</a>
-      {% endif %}
-    </li>
-  {% else %}
-    <li>No tienes tutorías agendadas.</li>
+    <div class="col">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body">
+          <h5 class="card-title">
+            <i class="bi bi-journal-text me-1"></i> {{ booking.subject }}
+          </h5>
+          <p class="card-text mb-1">
+            <i class="bi bi-calendar-event me-1"></i> {{ booking.datetime }}
+          </p>
+          <span class="badge 
+            {% if booking.status == 'confirmada' %}bg-success
+            {% elif booking.status == 'pendiente' %}bg-warning text-dark
+            {% else %}bg-secondary{% endif %}">
+            <i class="bi bi-info-circle me-1"></i> Estado: {{ booking.status|capitalize }}
+          </span>
+        </div>
+        <div class="card-footer bg-white border-0">
+          {% if booking.status == 'confirmada' %}
+            <a href="{{ url_for('booking.video_call', booking_id=booking.id) }}" class="btn btn-primary btn-sm d-flex align-items-center">
+              <i class="bi bi-camera-video me-1"></i> Unirse a Videollamada
+            </a>
+          {% elif booking.status == 'pendiente' %}
+            <span class="text-muted"><i class="bi bi-hourglass-split me-1"></i> Esperando confirmación</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
   {% endfor %}
-</ul>
+</div>
 {% endblock %}
