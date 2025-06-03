@@ -1,12 +1,48 @@
 {% extends 'base.html' %}
 {% block title %}Perfil Tutor{% endblock %}
 {% block content %}
-<h2>Perfil del Tutor</h2>
-<form method="POST">
-    {{ form.hidden_tag() }}
-    <div class="mb-3">{{ form.bio.label }} {{ form.bio(class="form-control") }}</div>
-    <div class="mb-3">{{ form.subjects.label }} {{ form.subjects(class="form-control") }}</div>
-    <div class="mb-3">{{ form.availability.label }} {{ form.availability(class="form-control") }}</div>
-    <button type="submit" class="btn btn-primary">Guardar</button>
-</form>
+<h2><i class="bi bi-person-badge me-2"></i> Perfil del Tutor</h2>
+<div class="row justify-content-center">
+  <div class="col-12 col-md-8 col-lg-6">
+    <div class="card shadow-sm">
+      <div class="card-body">
+        <form method="POST" id="tutor-profile-form" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="mb-3">
+            <label class="form-label" for="bio"><i class="bi bi-card-text me-1"></i> {{ form.bio.label }}</label>
+            {{ form.bio(class="form-control", id="bio", placeholder="Cuéntanos sobre ti...", aria_label="Biografía") }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="subjects"><i class="bi bi-book-half me-1"></i> {{ form.subjects.label }}</label>
+            {{ form.subjects(class="form-control", id="subjects", placeholder="Ej: Matemáticas, Física", aria_label="Materias") }}
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="availability"><i class="bi bi-calendar-week me-1"></i> {{ form.availability.label }}</label>
+            {{ form.availability(class="form-control", id="availability", placeholder="Ej: Lunes a viernes 16:00-20:00", aria_label="Disponibilidad") }}
+          </div>
+          <button type="submit" class="btn btn-primary d-flex align-items-center">
+            <i class="bi bi-save me-1"></i> Guardar
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('tutor-profile-form');
+    if (form) {
+      form.querySelectorAll('input, textarea, select').forEach(function(input) {
+        input.addEventListener('invalid', function() {
+          input.classList.add('is-invalid');
+        });
+        input.addEventListener('input', function() {
+          if (input.validity.valid) {
+            input.classList.remove('is-invalid');
+          }
+        });
+      });
+    }
+  });
+</script>
 {% endblock %}
