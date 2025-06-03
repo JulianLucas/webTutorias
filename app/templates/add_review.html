@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Calificar Tutor{% endblock %}
 {% block content %}
-<h2>Calificar a {{ tutor_profile.user.username }}</h2>
+<h2>Calificar a {{ tutor_profile.username }}</h2>
 <form method="POST">
     {{ form.hidden_tag() }}
     <div class="mb-3">{{ form.rating.label }} {{ form.rating(class="form-control") }}</div>
