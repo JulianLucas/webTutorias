@@ -11,4 +11,7 @@
     <div class="mb-3">{{ form.is_tutor() }} {{ form.is_tutor.label }}</div>
     <button type="submit" class="btn btn-primary">Registrarse</button>
 </form>
+<div class="mt-3">
+    ¿Ya tienes una cuenta? <a href="{{ url_for('auth.login') }}" class="btn btn-link">Inicia sesión aquí</a>
+</div>
 {% endblock %}
